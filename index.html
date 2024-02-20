@@ -7,10 +7,69 @@
     <title>Vite + Lit + TS</title>
     <link rel="stylesheet" href="./src/index.css" />
     <script type="module" src="/src/smart-ellipsis.ts"></script>
+    <style>
+      .box {
+        width: 300px;
+        border: 1px solid red;
+        margin-bottom: 30px;
+      }
+    </style>
   </head>
+
   <body>
-    <smart-ellipsis text="123">
-      <h1>Vite + Lit</h1>
-    </smart-ellipsis>
+    <div class="box">
+      <smart-ellipsis
+        text="在这个宁静的午后，阳光透过树叶的缝隙洒在地面上，微风吹拂着，树叶发出沙沙的声音。远处传来鸟儿的啁啾声，仿佛在述说着一段古老的故事。我静静地坐在树荫下，闭上眼睛，聆听大自然的声音，感受着宁静与安宁。这一刻，时间仿佛静止了，让我忘却了生活的烦恼，只沉浸在这片宁静的美好之中。"
+        visibleLine="3"
+        ellipsisText="...png"
+      >
+      </smart-ellipsis>
+    </div>
+    <div class="box">
+      <smart-ellipsis
+        text=" Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis atque rem eos nulla, inventore dignissimos, quidem et beatae nesciunt magnam, at dolor fuga similique repudiandae odit. Ipsum quasi rerum odit enim est repellat reprehenderit asperiores quis nihil. Voluptatem pariatur repudiandae quo modi consequatur. Possimus doloribus praesentium deleniti tenetur, expedita nemo eos. Tempore deleniti possimus voluptatum inventore enim quam molestias dicta, earum, repudiandae, ad maxime sed excepturi atque obcaecati fugit. Mollitia delectus doloremque, cumque adipisci qui neque deleniti fugit corrupti magni aperiam atque autem quisquam in repudiandae expedita molestias pariatur non velit obcaecati a incidunt. Eveniet nemo odio alias quae ratione."
+        visibleLine="3"
+        ellipsisText="...png"
+      >
+      </smart-ellipsis>
+    </div>
+    <div class="box">
+      <smart-ellipsis
+        text=" Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis atque rem eos nulla, inventore dignissimos, quidem et beatae nesciunt magnam, at dolor fuga similique repudiandae odit. Ipsum quasi rerum odit enim est repellat reprehenderit asperiores quis nihil. Voluptatem pariatur repudiandae quo modi consequatur. Possimus doloribus praesentium deleniti tenetur, expedita nemo eos. Tempore deleniti possimus voluptatum inventore enim quam molestias dicta, earum, repudiandae, ad maxime sed excepturi atque obcaecati fugit. Mollitia delectus doloremque, cumque adipisci qui neque deleniti fugit corrupti magni aperiam atque autem quisquam in repudiandae expedita molestias pariatur non velit obcaecati a incidunt. Eveniet nemo odio alias quae ratione."
+        visibleLine="1"
+        ellipsisText="...png"
+      >
+      </smart-ellipsis>
+    </div>
+    <button>click</button>
   </body>
+  <script>
+    function generateRandomEnglishText(length) {
+      let result = "";
+      const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      const charactersLength = characters.length;
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
+    }
+    const eles = document.querySelectorAll("smart-ellipsis");
+    Array.from(eles).forEach((ele) => {
+      const text = ele.getAttribute("text");
+      const suffix = text.slice(text.length - 2);
+      ele.setAttribute("ellipsisText", `...${suffix}`);
+    });
+    document.querySelector("button").addEventListener("click", () => {
+      const eles = document.querySelectorAll("smart-ellipsis");
+      Array.from(eles).forEach((ele) => {
+        ele.setAttribute("text", generateRandomEnglishText(200));
+        const text = ele.getAttribute("text");
+        const suffix = text.slice(text.length - 2);
+        ele.setAttribute("ellipsisText", `...${suffix}`);
+      });
+    });
+  </script>
 </html>

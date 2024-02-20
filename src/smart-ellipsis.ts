@@ -1,5 +1,13 @@
-import { LitElement, css, html } from "lit";
+import { LitElement, PropertyValueMap, css, html } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
+import {
+  binarySearch,
+  getLineHeight,
+  registerWordBreak,
+  setWordBreak,
+} from "./utils/compute";
+import { getElementHeight } from "./utils/dom";
+import { isString } from "./utils/is";
 
 @customElement("smart-ellipsis")
 export class SmartEllipsis extends LitElement {
@@ -12,23 +20,51 @@ export class SmartEllipsis extends LitElement {
   @property({ type: String })
   ellipsisText: string = "...";
 
-  @query("#lit-ellipsis-wrap")
+  @query(".lit-ellipsis-wrap")
   wrapRef!: HTMLDivElement;
 
-  @query(".vue-ellipsis-js-content")
+  @query(".lit-ellipsis-content")
   textRef!: HTMLSpanElement;
 
-  @query(".vue-ellipsis-js-ellipsis")
+  @query(".lit-ellipsis-text")
   ellipsisRef!: HTMLSpanElement;
 
   @state()
   truncating: boolean = false;
 
+  @state()
+  observer: ResizeObserver | null = null;
+
+  private isBrowser =
+    typeof window !== "undefined" && typeof document !== "undefined";
+
+  private isSupportResizeObserver =
+    this.isBrowser && typeof ResizeObserver !== "undefined";
+
   firstUpdated() {
     this.reflow();
+    if (this.isSupportResizeObserver) {
+      this.observer = new ResizeObserver(this.reflow);
+      this.observer.observe(this.wrapRef);
+    } else {
+      window.addEventListener("resize", this.reflow);
+    }
   }
 
-  private reflow() {
+  protected update(
+    changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ): void {
+    if (
+      changedProperties.has("text") ||
+      changedProperties.has("visibleLine") ||
+      changedProperties.has("ellipsisText")
+    ) {
+      this.reflow();
+    }
+    super.update(changedProperties);
+  }
+
+  private reflow = () => {
     if (
       !this.wrapRef ||
       !this.textRef ||
@@ -38,96 +74,71 @@ export class SmartEllipsis extends LitElement {
       return;
     }
     console.log("this.ellipsisRef", this.ellipsisRef);
+    this.ellipsisRef.style.display = "none";
+    this.textRef.innerText = this.text;
+    this.ellipsisRef.innerText = this.ellipsisText;
+    const lineHeight = getLineHeight(this.wrapRef);
+    console.log("lineHeight", lineHeight);
+    const wordBreak = registerWordBreak(this.textRef);
+    const visbleMaxHeight = lineHeight * this.visibleLine;
+    const maxHeight = visbleMaxHeight;
+    const height = getElementHeight(this.wrapRef);
+    if (height <= Math.max(maxHeight, visbleMaxHeight)) {
+      if (isString(wordBreak)) {
+        setWordBreak(this.textRef, wordBreak);
+      }
+      return;
+    }
+    this.truncating = true;
+    this.ellipsisRef.style.display = "inline";
+    this.trucateText(this.wrapRef, this.textRef, visbleMaxHeight);
+    if (isString(wordBreak)) {
+      setWordBreak(this.textRef, wordBreak);
+    }
+    this.truncating = false;
+  };
+
+  private trucateText(
+    conatienr: HTMLElement,
+    textContainer: HTMLElement,
+    max: number
+  ) {
+    const text = textContainer.textContent || "";
+    let currentText = "";
+    binarySearch(
+      0,
+      text.length,
+      (l, _r, m) => {
+        const temp = text.slice(l, m);
+        textContainer.innerText = currentText + temp;
+        const height = getElementHeight(conatienr);
+        const isExceededMax = height > max;
+        if (!isExceededMax) {
+          currentText += temp;
+        }
+        return isExceededMax;
+      },
+      (l, _r, m) => l === m
+    );
+    textContainer.innerText = currentText;
   }
 
   render() {
     return html`
-      <div ref="aref" class="vue-ellipsis-js" id="lit-ellipsis-wrap">
-        <span ref="textRef" class="vue-ellipsis-js-content"></span>
-        <span
-          ref="ellipsisRef"
-          class="vue-ellipsis-js-ellipsis"
-          onClick="handleEllipsisClick"
-        >
-          <slot name="ellipsisNode"></slot>
+      <div class="lit-ellipsis-wrap">
+        <span class="lit-ellipsis-content"></span>
+        <span class="lit-ellipsis-text" onClick="handleEllipsisClick">
+          <!-- <slot name="ellipsisNode"></slot> -->
         </span>
       </div>
     `;
   }
 
-  // private _onClick() {
-  //   this.count++
-  // }
-
   static styles = css`
     :host {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 2rem;
-      text-align: center;
     }
-
-    .logo {
-      height: 6em;
-      padding: 1.5em;
-      will-change: filter;
-      transition: filter 300ms;
-    }
-    .logo:hover {
-      filter: drop-shadow(0 0 2em #646cffaa);
-    }
-    .logo.lit:hover {
-      filter: drop-shadow(0 0 2em #325cffaa);
-    }
-
-    .card {
-      padding: 2em;
-    }
-
-    .read-the-docs {
-      color: #888;
-    }
-
-    ::slotted(h1) {
-      font-size: 3.2em;
-      line-height: 1.1;
-    }
-
-    a {
-      font-weight: 500;
-      color: #646cff;
-      text-decoration: inherit;
-    }
-    a:hover {
-      color: #535bf2;
-    }
-
-    button {
-      border-radius: 8px;
-      border: 1px solid transparent;
-      padding: 0.6em 1.2em;
-      font-size: 1em;
-      font-weight: 500;
-      font-family: inherit;
-      background-color: #1a1a1a;
-      cursor: pointer;
-      transition: border-color 0.25s;
-    }
-    button:hover {
-      border-color: #646cff;
-    }
-    button:focus,
-    button:focus-visible {
-      outline: 4px auto -webkit-focus-ring-color;
-    }
-
-    @media (prefers-color-scheme: light) {
-      a:hover {
-        color: #747bff;
-      }
-      button {
-        background-color: #f9f9f9;
-      }
+    .lit-ellipsis-content {
+      word-wrap: break-word;
     }
   `;
 }
