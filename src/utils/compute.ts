@@ -1,7 +1,6 @@
 /**
- * Return the current style of an element.
- * @param {HTMLElement} element The element to compute.
- * @param {string} prop The style property.
+ * @param {HTMLElement} element
+ * @param {string} prop
  * @returns {number}
  */
 export function computeStyle(element: HTMLElement, prop: string): string {
@@ -11,8 +10,8 @@ export function computeStyle(element: HTMLElement, prop: string): string {
       this.getPropertyValue = function (key: string) {
         const regex = /(-([a-z]){1})/g;
 
-        if (key === 'float') {
-          key = 'styleFloat';
+        if (key === "float") {
+          key = "styleFloat";
         }
 
         if (regex.test(key)) {
@@ -21,7 +20,9 @@ export function computeStyle(element: HTMLElement, prop: string): string {
           });
         }
 
-        return el.currentStyle && el.currentStyle[key] ? el.currentStyle[key] : null;
+        return el.currentStyle && el.currentStyle[key]
+          ? el.currentStyle[key]
+          : null;
       };
       return this;
     };
@@ -31,24 +32,22 @@ export function computeStyle(element: HTMLElement, prop: string): string {
 }
 
 /**
- * Return the line-height of an element.
- * @param {HTMLElement} element The element to get line-height.
+ * @param {HTMLElement} element
  * @returns {number}
  */
 export function getLineHeight(element: HTMLElement): number {
-  const lineHeight = computeStyle(element, 'line-height');
+  const lineHeight = computeStyle(element, "line-height");
 
-  if (lineHeight === 'normal') {
+  if (lineHeight === "normal") {
     // Create a temp element to get line-height
-    const dom = document.createElement('span');
-    dom.style.width = '300px';
-    dom.style.position = 'absolute';
-    dom.style.visibility = 'hidden';
-    dom.innerText = 'ruofee';
+    const dom = document.createElement("span");
+    dom.style.width = "300px";
+    dom.style.position = "absolute";
+    dom.style.visibility = "hidden";
+    dom.innerText = "ruofee";
     element.appendChild(dom);
     const height = dom.clientHeight;
     element.removeChild(dom);
-    // Compatible some browser
     return height * 1.1;
   }
 
@@ -56,12 +55,16 @@ export function getLineHeight(element: HTMLElement): number {
 }
 
 export function registerWordBreak(element: HTMLElement): string | void {
-  const wordBreak = computeStyle(element, 'word-break');
-  const overflowWrap = computeStyle(element, 'overflow-wrap');
+  const wordBreak = computeStyle(element, "word-break");
+  const overflowWrap = computeStyle(element, "overflow-wrap");
 
-  if (wordBreak !== 'word-break' && wordBreak !== 'break-all' && overflowWrap !== 'break-word') {
+  if (
+    wordBreak !== "word-break" &&
+    wordBreak !== "break-all" &&
+    overflowWrap !== "break-word"
+  ) {
     const styleWordBreak = element.style.wordBreak;
-    element.style.wordBreak = 'break-word';
+    element.style.wordBreak = "break-word";
     return styleWordBreak;
   }
 }
@@ -71,7 +74,6 @@ export function setWordBreak(element: HTMLElement, value: string): void {
 }
 
 /**
- * Return the middle value
  * @param {number} l
  * @param {number} r
  * @returns {number}

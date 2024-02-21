@@ -20,6 +20,15 @@ export class SmartEllipsis extends LitElement {
   @property({ type: String })
   ellipsisText: string = "...";
 
+  @state()
+  truncating: boolean = false;
+
+  @state()
+  observer: ResizeObserver | null = null;
+
+  @state()
+  mutationObserver: MutationObserver | null = null;
+
   @query(".lit-ellipsis-wrap")
   wrapRef!: HTMLDivElement;
 
@@ -29,19 +38,13 @@ export class SmartEllipsis extends LitElement {
   @query(".lit-ellipsis-text")
   ellipsisRef!: HTMLSpanElement;
 
-  @state()
-  truncating: boolean = false;
-
-  @state()
-  observer: ResizeObserver | null = null;
-
   private isBrowser =
     typeof window !== "undefined" && typeof document !== "undefined";
 
   private isSupportResizeObserver =
     this.isBrowser && typeof ResizeObserver !== "undefined";
 
-  firstUpdated() {
+  protected firstUpdated() {
     this.reflow();
     if (this.isSupportResizeObserver) {
       this.observer = new ResizeObserver(this.reflow);
@@ -73,12 +76,12 @@ export class SmartEllipsis extends LitElement {
     ) {
       return;
     }
-    console.log("this.ellipsisRef", this.ellipsisRef);
     this.ellipsisRef.style.display = "none";
     this.textRef.innerText = this.text;
-    this.ellipsisRef.innerText = this.ellipsisText;
+    if (!this._slottedChildren) {
+      this.ellipsisRef.innerText = this.ellipsisText;
+    }
     const lineHeight = getLineHeight(this.wrapRef);
-    console.log("lineHeight", lineHeight);
     const wordBreak = registerWordBreak(this.textRef);
     const visbleMaxHeight = lineHeight * this.visibleLine;
     const maxHeight = visbleMaxHeight;
@@ -123,13 +126,19 @@ export class SmartEllipsis extends LitElement {
     textContainer.innerText = currentText;
   }
 
+  private get _slottedChildren() {
+    const slot = this.shadowRoot!.querySelector("slot");
+    return slot!.assignedElements({ flatten: true });
+  }
+
   render() {
     return html`
       <div class="lit-ellipsis-wrap">
         <span class="lit-ellipsis-content"></span>
         <span class="lit-ellipsis-text" onClick="handleEllipsisClick">
-          <!-- <slot name="ellipsisNode"></slot> -->
+          <slot name="ellipsisSlot"></slot>
         </span>
+        <slot name="external"></slot>
       </div>
     `;
   }

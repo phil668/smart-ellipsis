@@ -13,6 +13,20 @@
         border: 1px solid red;
         margin-bottom: 30px;
       }
+      .aaa {
+        cursor: pointer;
+        display: none;
+        color: red;
+        &:hover {
+          color: blue;
+        }
+      }
+      smart-ellipsis {
+        &:hover .aaa {
+          display: inline;
+          color: blue;
+        }
+      }
     </style>
   </head>
 
@@ -23,9 +37,11 @@
         visibleLine="3"
         ellipsisText="...png"
       >
+        <span slot="ellipsisSlot">...png</span>
+        <div slot="external" class="aaa">external</div>
       </smart-ellipsis>
     </div>
-    <div class="box">
+    <!-- <div class="box">
       <smart-ellipsis
         text=" Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis atque rem eos nulla, inventore dignissimos, quidem et beatae nesciunt magnam, at dolor fuga similique repudiandae odit. Ipsum quasi rerum odit enim est repellat reprehenderit asperiores quis nihil. Voluptatem pariatur repudiandae quo modi consequatur. Possimus doloribus praesentium deleniti tenetur, expedita nemo eos. Tempore deleniti possimus voluptatum inventore enim quam molestias dicta, earum, repudiandae, ad maxime sed excepturi atque obcaecati fugit. Mollitia delectus doloremque, cumque adipisci qui neque deleniti fugit corrupti magni aperiam atque autem quisquam in repudiandae expedita molestias pariatur non velit obcaecati a incidunt. Eveniet nemo odio alias quae ratione."
         visibleLine="3"
@@ -40,7 +56,7 @@
         ellipsisText="...png"
       >
       </smart-ellipsis>
-    </div>
+    </div> -->
     <button>click</button>
   </body>
   <script>
@@ -57,18 +73,34 @@
       return result;
     }
     const eles = document.querySelectorAll("smart-ellipsis");
-    Array.from(eles).forEach((ele) => {
-      const text = ele.getAttribute("text");
-      const suffix = text.slice(text.length - 2);
-      ele.setAttribute("ellipsisText", `...${suffix}`);
-    });
+    // Array.from(eles).forEach((ele) => {
+    //   const text = ele.getAttribute("text");
+    //   const suffix = text.slice(text.length - 2);
+    //   // ele.setAttribute("ellipsisText", `...${suffix}`);
+    //   const slot = document.createElement("span");
+    //   slot.innerText = `...${suffix}`;
+    //   ele.appendChild(slot);
+    // });
     document.querySelector("button").addEventListener("click", () => {
       const eles = document.querySelectorAll("smart-ellipsis");
       Array.from(eles).forEach((ele) => {
         ele.setAttribute("text", generateRandomEnglishText(200));
         const text = ele.getAttribute("text");
         const suffix = text.slice(text.length - 2);
-        ele.setAttribute("ellipsisText", `...${suffix}`);
+        // ele.setAttribute("ellipsisText", `...${suffix}`);
+        const slot = document.createElement("span");
+        // ele.removeChild(ele.children[0]);
+        ele.innerHTML = "";
+        slot.setAttribute("slot", "ellipsisSlot");
+        slot.innerText = `...${suffix}`;
+        // ele.innerHTML(slot);
+        ele.appendChild(slot);
+
+        const e = document.createElement("div");
+        e.classList.add("aaa");
+        e.innerText = "external";
+        e.setAttribute("slot", "external");
+        ele.appendChild(e);
       });
     });
   </script>
